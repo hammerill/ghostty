@@ -21,6 +21,9 @@ layout(location = 5) in uint atlas;
 // Misc glyph properties.
 layout(location = 6) in uint glyph_bools;
 
+// The background color for this glyph's cell.
+layout(location = 7) in uvec4 cell_bg_color;
+
 // Values `atlas` can take.
 const uint ATLAS_GRAYSCALE = 0u;
 const uint ATLAS_COLOR = 1u;
@@ -36,12 +39,7 @@ out CellTextVertexOut {
     vec2 tex_coord;
 } out_data;
 
-layout(binding = 1, std430) readonly buffer bg_cells {
-    uint bg_colors[];
-};
-
 void main() {
-    uvec2 grid_size = unpack2u16(grid_size_packed_2u16);
     uvec2 cursor_pos = unpack2u16(cursor_pos_packed_2u16);
     bool cursor_wide = (bools & CURSOR_WIDE) != 0;
     bool use_linear_blending = (bools & USE_LINEAR_BLENDING) != 0;
@@ -115,11 +113,8 @@ void main() {
     // Get our color. We always fetch a linearized version to
     // make it easier to handle minimum contrast calculations.
     out_data.color = load_color(color, true);
-    // Get the BG color
-    out_data.bg_color = load_color(
-            unpack4u8(bg_colors[grid_pos.y * grid_size.x + grid_pos.x]),
-            true
-        );
+    // Get the BG color from the vertex data.
+    out_data.bg_color = load_color(cell_bg_color, true);
     // Blend it with the global bg color
     vec4 global_bg = load_color(
             unpack4u8(bg_color_packed_4u8),

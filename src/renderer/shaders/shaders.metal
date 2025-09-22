@@ -543,6 +543,9 @@ struct CellTextVertexIn {
 
   // Misc properties of the glyph.
   uint8_t bools [[attribute(6)]];
+
+  // The background color for this cell.
+  uchar4 bg_color [[attribute(7)]];
 };
 
 struct CellTextVertexOut {
@@ -559,6 +562,7 @@ vertex CellTextVertexOut cell_text_vertex(
   constant Uniforms& uniforms [[buffer(1)]],
   constant uchar4 *bg_colors [[buffer(2)]]
 ) {
+  (void)bg_colors;
   // Convert the grid x, y into world space x, y by accounting for cell size
   float2 cell_pos = uniforms.cell_size * float2(in.grid_pos);
 
@@ -635,7 +639,7 @@ vertex CellTextVertexOut cell_text_vertex(
 
   // Get the BG color
   out.bg_color = load_color(
-    bg_colors[in.grid_pos.y * uniforms.grid_size.x + in.grid_pos.x],
+    in.bg_color,
     uniforms.use_display_p3,
     true
   );
@@ -850,4 +854,3 @@ fragment float4 image_fragment(
 
   return rgba;
 }
-

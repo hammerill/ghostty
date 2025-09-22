@@ -1485,10 +1485,7 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
                 pass.step(.{
                     .pipeline = self.shaders.pipelines.cell_text,
                     .uniforms = frame.uniforms.buffer,
-                    .buffers = &.{
-                        frame.cells.buffer,
-                        frame.cells_bg.buffer,
-                    },
+                    .buffers = &.{frame.cells.buffer},
                     .textures = &.{
                         frame.grayscale,
                         frame.color,
@@ -2977,6 +2974,10 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
                 .curly => .underline_curly,
             };
 
+            const ux: usize = @intCast(x);
+            const uy: usize = @intCast(y);
+            const cell_bg = self.cells.bgCell(uy, ux).*;
+
             const render = try self.font_grid.renderGlyph(
                 self.alloc,
                 font.sprite_index,
@@ -2991,6 +2992,7 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
                 .atlas = .grayscale,
                 .grid_pos = .{ @intCast(x), @intCast(y) },
                 .color = .{ color.r, color.g, color.b, alpha },
+                .bg_color = cell_bg,
                 .glyph_pos = .{ render.glyph.atlas_x, render.glyph.atlas_y },
                 .glyph_size = .{ render.glyph.width, render.glyph.height },
                 .bearings = .{
@@ -3008,6 +3010,10 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
             color: terminal.color.RGB,
             alpha: u8,
         ) !void {
+            const ux: usize = @intCast(x);
+            const uy: usize = @intCast(y);
+            const cell_bg = self.cells.bgCell(uy, ux).*;
+
             const render = try self.font_grid.renderGlyph(
                 self.alloc,
                 font.sprite_index,
@@ -3022,6 +3028,7 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
                 .atlas = .grayscale,
                 .grid_pos = .{ @intCast(x), @intCast(y) },
                 .color = .{ color.r, color.g, color.b, alpha },
+                .bg_color = cell_bg,
                 .glyph_pos = .{ render.glyph.atlas_x, render.glyph.atlas_y },
                 .glyph_size = .{ render.glyph.width, render.glyph.height },
                 .bearings = .{
@@ -3039,6 +3046,10 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
             color: terminal.color.RGB,
             alpha: u8,
         ) !void {
+            const ux: usize = @intCast(x);
+            const uy: usize = @intCast(y);
+            const cell_bg = self.cells.bgCell(uy, ux).*;
+
             const render = try self.font_grid.renderGlyph(
                 self.alloc,
                 font.sprite_index,
@@ -3053,6 +3064,7 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
                 .atlas = .grayscale,
                 .grid_pos = .{ @intCast(x), @intCast(y) },
                 .color = .{ color.r, color.g, color.b, alpha },
+                .bg_color = cell_bg,
                 .glyph_pos = .{ render.glyph.atlas_x, render.glyph.atlas_y },
                 .glyph_size = .{ render.glyph.width, render.glyph.height },
                 .bearings = .{
@@ -3077,6 +3089,10 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
             const cell = rac.cell;
 
             const cp = cell.codepoint();
+
+            const ux: usize = @intCast(x);
+            const uy: usize = @intCast(y);
+            const cell_bg = self.cells.bgCell(uy, ux).*;
 
             // Render
             const render = try self.font_grid.renderGlyph(
@@ -3114,6 +3130,7 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
                 .bools = .{ .no_min_contrast = noMinContrast(cp) },
                 .grid_pos = .{ @intCast(x), @intCast(y) },
                 .color = .{ color.r, color.g, color.b, alpha },
+                .bg_color = cell_bg,
                 .glyph_pos = .{ render.glyph.atlas_x, render.glyph.atlas_y },
                 .glyph_size = .{ render.glyph.width, render.glyph.height },
                 .bearings = .{
@@ -3196,11 +3213,16 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
                 },
             };
 
+            const cursor_row: usize = @intCast(screen.cursor.y);
+            const cursor_col: usize = @intCast(x);
+            const cursor_bg = self.cells.bgCell(cursor_row, cursor_col).*;
+
             self.cells.setCursor(.{
                 .atlas = .grayscale,
                 .bools = .{ .is_cursor_glyph = true },
                 .grid_pos = .{ x, screen.cursor.y },
                 .color = .{ cursor_color.r, cursor_color.g, cursor_color.b, alpha },
+                .bg_color = cursor_bg,
                 .glyph_pos = .{ render.glyph.atlas_x, render.glyph.atlas_y },
                 .glyph_size = .{ render.glyph.width, render.glyph.height },
                 .bearings = .{
@@ -3245,11 +3267,17 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
                 };
             }
 
+            const cell_bg = self.cells.bgCell(
+                @intCast(coord.y),
+                @intCast(coord.x),
+            ).*;
+
             // Add our text
             try self.cells.add(self.alloc, .text, .{
                 .atlas = .grayscale,
                 .grid_pos = .{ @intCast(coord.x), @intCast(coord.y) },
                 .color = .{ fg.r, fg.g, fg.b, 255 },
+                .bg_color = cell_bg,
                 .glyph_pos = .{ render.glyph.atlas_x, render.glyph.atlas_y },
                 .glyph_size = .{ render.glyph.width, render.glyph.height },
                 .bearings = .{
